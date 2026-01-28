@@ -1,4 +1,4 @@
-// Constants
+// Константы
 const drillTypes = [
     Blocks.mechanicalDrill,
     Blocks.pneumaticDrill,
@@ -13,26 +13,27 @@ const waterExtractor = Blocks.waterExtractor;
 const oilExtractor = Blocks.oilExtractor;
 const oil = Liquids.oil;
 
-// Keys
+// Клавиши
 const keyDrillSpeed = KeyCode.c;
 const keyPressed = KeyCode.controlLeft;
 
-// Main table
-let table = new Table();
+// Основная таблица
+var table = new Table();
+var mainTable = new Table();
 
-// States
+// Состояния
 var worldLoaded = false;
 var dragging = false;
 var startX = 0, startY = 0, endX = 0, endY = 0;
-// var prevEndX = -1, prevEndY = -1; // For memory optimization
-var regions = []; // Array for storing all regions
+// var prevEndX = -1, prevEndY = -1; // Для оптимизации памяти
+var regions = []; // Массив для хранения всех областей
 
-// Main events
+// Основные ивенты
 Events.on(WorldLoadEvent, init);
 Events.run(Trigger.draw, drawer);
 Events.run(Trigger.update, update);
 
-// ISO-ME
+
 function updateStatistics() {
     mainTable.clearChildren();
     
@@ -42,23 +43,25 @@ function updateStatistics() {
         return;
     }
     
-    // Summary statistics across all regions
+    // Суммарная статистика по всем областям
     var totalDrillStats = {speed: 0, effTotal: 0, amount: 0};
     var totalInOutPutStats = {input: new ObjectMap(), output: new ObjectMap(), exceptions: new ObjectMap(), effTotal: 0, amount: 0};
     var totalPowerStats = {production: 0, effTotal: 0, amount: 0}
     
-    // Collect data from all regions
+    // TODO убрать повторы зданий по ID
+    // TODO оптимизировать сбор зданий в одной функции
+    // Собираем данные со всех областей
     for (let region of regions) {
         var drillStats = getDrillStatsForRegion(region);
         var inOutPutStats = getInOutPutStatsForRegion(region);
         var powerStats = getPowerStatsForRegion(region);
 
-        // Sum drills
+        // Суммируем буры
         totalDrillStats.speed += drillStats.speed;
         totalDrillStats.effTotal += drillStats.effTotal;
         totalDrillStats.amount += drillStats.amount;
         
-        // Sum input and output
+        // Суммируем Input и Output
         inOutPutStats.input.each((item, amount) => {
             totalInOutPutStats.input.put(item, totalInOutPutStats.input.get(item, 0) + amount);
         });
@@ -71,13 +74,13 @@ function updateStatistics() {
         totalInOutPutStats.effTotal += inOutPutStats.effTotal;
         totalInOutPutStats.amount += inOutPutStats.amount;
         
-        // Sum power
+        // Суммируем энергию
         totalPowerStats.production = powerStats.production;
         totalPowerStats.effTotal = powerStats.effTotal;
         totalPowerStats.amount = powerStats.amount;
     };
     
-    // Drill statistics
+    // Статистика буров
     if (totalDrillStats.amount > 0) {
         var drillTable = new Table();
         drillTable.add("[accent]" + Core.bundle.get("rateCalculate.drills") + ":[]").row();
@@ -88,7 +91,7 @@ function updateStatistics() {
         mainTable.add(drillTable).row();
     }
     
-    // Power statistics
+    // Статистика энергии
     if (totalPowerStats.amount > 0) {
         mainTable.row();
         var powerTable = new Table();
@@ -100,7 +103,7 @@ function updateStatistics() {
         mainTable.add(powerTable).row();
     }
     
-    // Factory statistics (input)
+    // Статистика фабрик (вход)
     let totalFactoriesInput = totalInOutPutStats.input;
     if (totalFactoriesInput.size > 0) {
         mainTable.row();
@@ -115,7 +118,7 @@ function updateStatistics() {
         });
     }
     
-    // Factory statistics (output)
+    // Статистика фабрик (выход)
     let totalFactoriesOutput = totalInOutPutStats.output;
     if (totalFactoriesOutput.size > 0 || totalInOutPutStats.exceptions.size > 0) {
         mainTable.row();
@@ -146,7 +149,7 @@ function updateStatistics() {
         });
     }
 
-    // Overall factory efficiency
+    // Общая эффективность фабрик
     if (totalFactoriesInput.size > 0 || totalFactoriesOutput.size > 0) {
         mainTable.row();
         mainTable.add("[accent]" + Core.bundle.get("rateCalculate.overall") + ": []");
@@ -154,9 +157,8 @@ function updateStatistics() {
     }
 }
 
-// ISO-ME 
 //
-// Functions for working with individual regions
+// Функции для работы с отдельными областями
 //
 
 function getDrillStatsForRegion(region) {
@@ -188,7 +190,6 @@ function getDrillStatsForRegion(region) {
     return {speed: speed, effTotal: effTotal, amount: amount};
 }
 
-// ISO-ME
 function getDrillRate(build, block) {
     let drillingItem = build.dominantItem;
     let drillingItems = build.dominantItems;
@@ -197,12 +198,12 @@ function getDrillRate(build, block) {
     let liquidBoost = 1;
     // let groundMultiplier = 1;
 
-    // Liquid boost
+    // Жидкостной буст
     if(block.hasLiquids && build.liquids.currentAmount() >= 0.001) {
         liquidBoost *= block.liquidBoostIntensity * block.liquidBoostIntensity;
     }
 
-    // // Ground type bonus (for newer drills)
+    // // Бонус от типа земли (для новых буров)
     // if (drill.block.attributes && drill.block.attributes.containsKey(Attribute.heat)) {
     //     groundMultiplier = tile.getAttributes().get(Attribute.heat) * drill.block.attributes.get(Attribute.heat) + 1;
     // }
@@ -210,7 +211,6 @@ function getDrillRate(build, block) {
     return (60 / baseDrillTime * liquidBoost * build.timeScale() * drillingItems);
 }
 
-// ISO-ME
 function getInOutPutStatsForRegion(region) {
     let minx = Math.min(region.startX, region.endX);
     let miny = Math.min(region.startY, region.endY);
@@ -335,7 +335,6 @@ function getInOutPutStatsForRegion(region) {
     return {input: input, output: output, exceptions: exceptions, effTotal: effTotal, amount: amount};
 }
 
-// ISO-ME
 function getPowerStatsForRegion(region) {
     let minx = Math.min(region.startX, region.endX);
     let miny = Math.min(region.startY, region.endY);
@@ -367,7 +366,6 @@ function getPowerStatsForRegion(region) {
     return {production: totalPower, effTotal: effTotal, amount: amount};
 }
 
-// ISO-ME
 function getPowerProductionRate(build, block) {
     let production = build.getPowerProduction() || block.powerProduction;
     
@@ -381,23 +379,22 @@ function getPowerProductionRate(build, block) {
 }
 
 //
-// Main functions: Initialization, Frame drawing, Update – InputHandler
+// Основные функции: Инициализация, Отрисовка рамки, Update - InputHandler
 //
 
 function init() {
-    table.clearChildren();
-    
     Vars.ui.hudGroup.removeChild(table);
+
+    table = new Table();
+    table.bottom().left().margin(10);
     Vars.ui.hudGroup.addChild(table);
-    
-    table.bottom().left().margin(Scl.scl(5));
 
     let betweenTable = new Table();
-    betweenTable.margin(Scl.scl(5));
+    betweenTable.margin(5);
     betweenTable.background(Styles.black5);
     table.add(betweenTable);
 
-    let mainTable = new Table();
+    mainTable = new Table();
     betweenTable.add(mainTable);
 
     worldLoaded = true; 
@@ -406,7 +403,7 @@ function init() {
 function drawer() {
     if (!worldLoaded) return;
 
-    // Draw the current region (if any)
+    // Отрисовка текущей области (если есть)
     if (dragging) {
         let wx1 = Math.min(startX, endX) * Vars.tilesize;
         let wy1 = Math.min(startY, endY) * Vars.tilesize;
@@ -421,7 +418,7 @@ function drawer() {
         Draw.reset();
     }
 
-    // Draw all saved regions
+    // Отрисовка всех сохраненных областей
     for (let region of regions) {
         let wx1 = Math.min(region.startX, region.endX) * Vars.tilesize;
         let wy1 = Math.min(region.startY, region.endY) * Vars.tilesize;
@@ -437,6 +434,7 @@ function drawer() {
     };
 }
 
+//TODO: оптимизировать поток
 function update() {
     if (!worldLoaded) return;
 
