@@ -1,4 +1,4 @@
-this.modFns = this.modFns || {};
+Core.modFns = Core.modFns || {};
 
 modFns.getDrillStatsForReg = function(region, drillTypes) {
     let minx = Math.min(region.startX, region.endX);

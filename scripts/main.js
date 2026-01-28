@@ -214,7 +214,7 @@ function drawer() {
     };
 }
 
-function update(keyPressed, keyDrillSpeed) {
+function update() {
     if (!worldLoaded) return;
 
     const ctrlPressed = Core.input.keyDown(keyPressed);
