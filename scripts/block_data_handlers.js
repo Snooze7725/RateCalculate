@@ -1,3 +1,4 @@
+// BUG change what class it's placed under
 Core.modFns = Core.modFns || {};
 
 modFns.getDrillStatsForReg = function(region, drillTypes) {
