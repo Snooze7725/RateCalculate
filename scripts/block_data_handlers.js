@@ -1,5 +1,6 @@
-// BUG change what class it's placed under
-Core.modFns = Core.modFns || {};
+// BUG Either make new prefixes that don't rely on classes, or make a class that's 
+// explicitly custom to avoid collisions
+global.modFns = global.modFns || {};
 
 modFns.getDrillStatsForReg = function(region, drillTypes) {
     let minx = Math.min(region.startX, region.endX);
