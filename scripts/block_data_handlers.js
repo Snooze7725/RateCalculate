@@ -1,8 +1,4 @@
-// BUG Either make new prefixes that don't rely on classes, or make a class that's 
-// explicitly custom to avoid collisions
-global.modFns = global.modFns || {};
-
-modFns.getDrillStatsForReg = function(region, drillTypes) {
+function mod_getDrillStatsForReg(region, drillTypes) {
     let minx = Math.min(region.startX, region.endX);
     let miny = Math.min(region.startY, region.endY);
     let maxx = Math.max(region.startX, region.endX);
@@ -22,7 +18,7 @@ modFns.getDrillStatsForReg = function(region, drillTypes) {
                 if (IDs.includes(build.id)) continue;
                 IDs.push(build.id);
                 
-                speed += modFns.getDrillRate(build, build.block);
+                speed += mod_getDrillRate(build, build.block);
                 amount++;
                 effTotal += build.efficiency;
             }
@@ -31,7 +27,7 @@ modFns.getDrillStatsForReg = function(region, drillTypes) {
     return {speed: speed, effTotal: effTotal, amount: amount};
 }
 
-modFns.getDrillRate = function(build, block) {
+function mod_getDrillRate(build, block) {
     let drillingItem = build.dominantItem;
     let drillingItems = build.dominantItems;
     let baseDrillTime = block.getDrillTime(drillingItem);
@@ -52,7 +48,7 @@ modFns.getDrillRate = function(build, block) {
     return (60 / baseDrillTime * liquidBoost * build.timeScale() * drillingItems);
 }
 
-modFns.getInOutPutStatsForReg = function(region, exceptionResults, exceptionMulti, waterExtractor, oilExtractor, oil) {
+function mod_getInOutPutStatsForReg(region, exceptionResults, exceptionMulti, waterExtractor, oilExtractor, oil) {
     let minx = Math.min(region.startX, region.endX);
     let miny = Math.min(region.startY, region.endY);
     let maxx = Math.max(region.startX, region.endX);
@@ -176,7 +172,7 @@ modFns.getInOutPutStatsForReg = function(region, exceptionResults, exceptionMult
     return {input: input, output: output, exceptions: exceptions, effTotal: effTotal, amount: amount};
 }
 
-modFns.getPowerStatsForReg = function(region) {
+function mod_getPowerStatsForReg(region) {
     let minx = Math.min(region.startX, region.endX);
     let miny = Math.min(region.startY, region.endY);
     let maxx = Math.max(region.startX, region.endX);
@@ -198,7 +194,7 @@ modFns.getPowerStatsForReg = function(region) {
             if (IDs.includes(build.id)) continue;
 
             IDs.push(build.id);
-            totalPower += getPowerProdRate(build, block);
+            totalPower += mod_getPowerProdRate(build, block);
             amount++;
             effTotal += build.efficiency;
         }
@@ -207,7 +203,7 @@ modFns.getPowerStatsForReg = function(region) {
     return {production: totalPower, effTotal: effTotal, amount: amount};
 }
 
-modFns.getPowerProdRate = function(build, block) {
+function mod_getPowerProdRate(build, block) {
     let production = build.getPowerProduction() || block.powerProduction;
     
     let usagePower = block.consPower;
@@ -218,3 +214,11 @@ modFns.getPowerProdRate = function(build, block) {
     
     return production;
 }
+
+module.exports = {
+    mod_getDrillStatsForReg: mod_getDrillStatsForReg,
+    mod_getDrillRate: mod_getDrillRate,
+    mod_getInOutPutStatsForReg: mod_getInOutPutStatsForReg,
+    mod_getPowerStatsForReg: mod_getPowerStatsForReg,
+    mod_getPowerProdRate: mod_getPowerProdRate
+};

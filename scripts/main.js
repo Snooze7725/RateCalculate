@@ -1,5 +1,5 @@
 // Constants
-require("block_data_handlers");
+const dataHandlers = require("block_data_handlers");
 
 const exceptionResults = [Blocks.separator, Blocks.disassembler];
 const exceptionMulti = [Blocks.siliconCrucible, Blocks.cultivator];
@@ -33,10 +33,10 @@ var regions = []; // Array for storing all regions
 
 // Main events
 Events.on(WorldLoadEvent, init);
-Events.run(Trigger.draw, drawer);
-Events.run(Trigger.update, update);
+Events.run(Trigger.draw, mod_drawer);
+Events.run(Trigger.update, mod_update);
 
-function updateStatistics() {
+function mod_updateStatistics() {
     mainTable.clearChildren();
     
     if (regions.length === 0) {
@@ -52,9 +52,9 @@ function updateStatistics() {
     
     // Collect data from all regions
     for (let region of regions) {
-        var drillStats = modFns.getDrillStatsForReg(region, drillTypes);
-        var inOutPutStats = modFns.getInOutPutStatsForReg(region);
-        var powerStats = modFns.getPowerStatsForReg(region);
+        var drillStats = dataHandlers.mod_getDrillStatsForReg(region, drillTypes);
+        var inOutPutStats = dataHandlers.mod_getInOutPutStatsForReg(region, exceptionResults, exceptionMulti, waterExtractor, oilExtractor, oil);
+        var powerStats = dataHandlers.mod_getPowerStatsForReg(region);
 
         // Sum drills
         totalDrillStats.speed += drillStats.speed;
@@ -180,7 +180,7 @@ function init() {
     worldLoaded = true; 
 }
 
-function drawer() {
+function mod_drawer() {
     if (!worldLoaded) return;
 
     // Draw the current region (if any)
@@ -214,7 +214,7 @@ function drawer() {
     };
 }
 
-function update() {
+function mod_update() {
     if (!worldLoaded) return;
 
     const ctrlPressed = Core.input.keyDown(keyPressed);
@@ -257,9 +257,9 @@ function update() {
     }
 
     // if (prevEndX !== endX || prevEndY !== endY)
-    //     updateStatistics();
+    //     mod_updateStatistics();
 
-    updateStatistics();
+    mod_updateStatistics();
 
     if (!ctrlPressed) {
         regions = [];
