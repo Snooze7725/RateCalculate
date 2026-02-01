@@ -170,14 +170,20 @@ function init() {
     table.bottom().left().margin(Scl.scl(5));
 
     let betweenTable = new Table();
-    betweenTable.margin(Scl.scl(5));
-    betweenTable.background(Styles.black5);
-    
+    betweenTable.margin(Scl.scl(8));
+    betweenTable.background(Tex.pane);
+
     table.add(betweenTable);
 
-    betweenTable.add(mainTable);
+    betweenTable.add(mainTable).row();
 
-    worldLoaded = true; 
+    let buttonTable = new Table();
+    buttonTable.marginTop(Scl.scl(8));
+    buttonTable.button("select", () => {}).grow();
+
+    betweenTable.add(buttonTable).growX();
+
+    worldLoaded = true;
 }
 
 function mod_drawer() {
