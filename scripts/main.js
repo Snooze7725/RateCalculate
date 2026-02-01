@@ -172,9 +172,9 @@ function init() {
     let betweenTable = new Table();
     betweenTable.margin(Scl.scl(5));
     betweenTable.background(Styles.black5);
+    
     table.add(betweenTable);
 
-    let mainTable = new Table();
     betweenTable.add(mainTable);
 
     worldLoaded = true; 
