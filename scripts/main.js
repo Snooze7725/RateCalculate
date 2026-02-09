@@ -16,10 +16,6 @@ const drillTypes = [
     Blocks.impactDrill,
 ];
 
-// Keys
-var keyDrillSpeed = KeyCode.c;
-var keyPressed = KeyCode.controlLeft;
-
 // Main table
 var table = new Table();
 var mainTable = new Table();
@@ -27,18 +23,37 @@ var mainTable = new Table();
 // States
 var worldLoaded = false;
 var dragging = false;
+var isMobile = false;
 var startX = 0, startY = 0, endX = 0, endY = 0;
 // var prevEndX = -1, prevEndY = -1; // For memory optimization
 var regions = []; // Array for storing all regions
 
 // Main events
-Events.on(WorldLoadEvent, init);
-Events.run(Trigger.draw, mod_drawer);
-Events.run(Trigger.update, mod_update);
+// Create the table after the world is loaded
+Events.on(WorldLoadEvent, mod_init);
 
+// Check if user is on mobile
+if (isMobile) {
+    var modUpdateRef = mod_mobile_update;
+} else {
+    var modUpdateRef = mod_update;
+
+    // Button mapping
+    var keyDrillSpeed = KeyCode.c;
+    var keyPressed = KeyCode.controlLeft;
+}
+
+// Draw the selector per draw trigger tick - draws whatever is available contantly
+Events.run(Trigger.draw, mod_drawer);
+// Update the regions per update trigger tick - records constantly 
+Events.run(Trigger.update, modUpdateRef);
+
+
+// 
 function mod_updateStatistics() {
     mainTable.clearChildren();
     
+    // The default output
     if (regions.length === 0) {
         mainTable.add("[lightgray]" + Core.bundle.get("rateCalculate.select") + "[]").left().row();
         mainTable.add("[lightgray]" + Core.bundle.get("rateCalculate.selectfew") + "[]").left();
@@ -46,6 +61,7 @@ function mod_updateStatistics() {
     }
     
     // Summary statistics across all regions
+    // TODO make ts work
     var totalDrillStats = {speed: 0, effTotal: 0, amount: 0};
     var totalInOutPutStats = {input: new ObjectMap(), output: new ObjectMap(), exceptions: new ObjectMap(), effTotal: 0, amount: 0};
     var totalPowerStats = {production: 0, effTotal: 0, amount: 0}
@@ -161,8 +177,14 @@ function mod_updateStatistics() {
 // Main functions: Initialization, Frame drawing, Update – InputHandler
 //
 
-function init() {
+function mod_init() {
     table.clearChildren();
+
+    // Checks if user is on mobile
+    // TODO check if ts works
+    if (Core.app.isDesktop() || Core.app.isWeb()) {
+        isMobile = true;
+    }
     
     Vars.ui.hudGroup.removeChild(table);
     Vars.ui.hudGroup.addChild(table);
@@ -179,7 +201,13 @@ function init() {
 
     let buttonTable = new Table();
     buttonTable.marginTop(Scl.scl(8));
-    buttonTable.button("select", () => {}).grow();
+
+    // If user is on mobile make the button
+    if (isMobile) {
+        buttonTable.button("select", () => {
+            dragging = true;
+        }).grow();
+    }
 
     betweenTable.add(buttonTable).growX();
 
@@ -223,8 +251,10 @@ function mod_drawer() {
 function mod_update() {
     if (!worldLoaded) return;
 
+    // Flag for if holding ctrl
     const ctrlPressed = Core.input.keyDown(keyPressed);
     
+    // If holding mb get coords - you're dragging now
     if (Core.input.keyTap(keyDrillSpeed)) {
         startX = World.toTile(Core.input.mouseWorldX());
         startY = World.toTile(Core.input.mouseWorldY());
@@ -233,28 +263,22 @@ function mod_update() {
         dragging = true;
     }
     
+    // If still dragging grab end coords
     if (dragging) {
         // prevEndX = endX;
         // prevEndY = endY;
         endX = World.toTile(Core.input.mouseWorldX());
         endY = World.toTile(Core.input.mouseWorldY());
         
-        if (ctrlPressed) {
-            if (!Core.input.keyDown(keyDrillSpeed)) {
-                regions.push({
-                    startX: startX,
-                    startY: startY,
-                    endX: endX,
-                    endY: endY
-                });
-            }
-        } else {
-            regions[0] = {
+        // While ctrl held and mb held, save coords to be drawn
+        if (ctrlPressed && !Core.input.keyDown(keyDrillSpeed)) {
+            // Pushes items into the back of the array
+            regions.push({
                 startX: startX,
                 startY: startY,
                 endX: endX,
                 endY: endY
-            }
+            });
         }
 
         if (!Core.input.keyDown(keyDrillSpeed)) {
@@ -270,4 +294,11 @@ function mod_update() {
     if (!ctrlPressed) {
         regions = [];
     }
+}
+
+// Mobile version of mod update
+function mod_mobile_update() {
+    if (!worldLoaded) return;
+
+    // Flag for if button toggled
 }
