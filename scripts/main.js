@@ -23,10 +23,17 @@ var mainTable = new Table();
 // States
 var worldLoaded = false;
 var dragging = false;
-var isMobile = false;
+var isMobile = true;
+var mobileBtn = false;
 var startX = 0, startY = 0, endX = 0, endY = 0;
 // var prevEndX = -1, prevEndY = -1; // For memory optimization
 var regions = []; // Array for storing all regions
+
+// TODO uncomment this
+// Check if user is on mobile
+// if (Core.app.isDesktop() || Core.app.isWeb()) {
+//     isMobile = false;
+// }
 
 // Main events
 // Create the table after the world is loaded
@@ -61,7 +68,7 @@ function mod_updateStatistics() {
     }
     
     // Summary statistics across all regions
-    // TODO make ts work
+    // BUG statistics across all regions are not summed up
     var totalDrillStats = {speed: 0, effTotal: 0, amount: 0};
     var totalInOutPutStats = {input: new ObjectMap(), output: new ObjectMap(), exceptions: new ObjectMap(), effTotal: 0, amount: 0};
     var totalPowerStats = {production: 0, effTotal: 0, amount: 0}
@@ -181,11 +188,6 @@ function mod_init() {
     table.clearChildren();
 
     // Checks if user is on mobile
-    // TODO check if ts works
-    if (Core.app.isDesktop() || Core.app.isWeb()) {
-        isMobile = true;
-    }
-    
     Vars.ui.hudGroup.removeChild(table);
     Vars.ui.hudGroup.addChild(table);
     
@@ -204,9 +206,12 @@ function mod_init() {
 
     // If user is on mobile make the button
     if (isMobile) {
+        // TODO give the button a min width and change it into an image button
         buttonTable.button("select", () => {
-            dragging = true;
-        }).grow();
+            if (mobileBtn) {
+                mobileBtn = false;
+            } else mobileBtn = true;
+        });
     }
 
     betweenTable.add(buttonTable).growX();
@@ -279,6 +284,13 @@ function mod_update() {
                 endX: endX,
                 endY: endY
             });
+        } else {
+            regions[0] = {
+                startX: startX,
+                startY: startY,
+                endX: endX,
+                endY: endY
+            }
         }
 
         if (!Core.input.keyDown(keyDrillSpeed)) {
@@ -300,5 +312,29 @@ function mod_update() {
 function mod_mobile_update() {
     if (!worldLoaded) return;
 
-    // Flag for if button toggled
+    // 
+    if (mobileBtn && !dragging && Core.input.isTouched()) {
+        startX = World.toTile(Core.input.mouseWorldX());
+        startY = World.toTile(Core.input.mouseWorldY());
+
+        dragging = true;
+    }
+
+    if (dragging) {
+        endX = World.toTile(Core.input.mouseWorldX());
+        endY = World.toTile(Core.input.mouseWorldY());
+
+        regions[0] = {
+            startX: startX,
+            startY: startY,
+            endX: endX,
+            endY: endY
+        }
+
+        if (!Core.input.isTouched()) {
+            dragging = false;
+        }
+
+        mod_updateStatistics();
+    }
 }
