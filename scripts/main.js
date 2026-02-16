@@ -205,9 +205,25 @@ function mod_init() {
     buttonTable.marginTop(Scl.scl(8));
 
     // If user is on mobile make the button
+    // let texture = new TextureDrawableRegion("path/to/your/icon.png");
+
     if (isMobile) {
         // TODO give the button a min width and change it into an image button
-        buttonTable.button("select", () => {
+        // TODO use the crafting icon by either finding a way to grab a menu icon OR download an use an asset using core.atlas.find()
+
+        // public Cell<ImageButton> button(Drawable icon, Runnable listener){
+        //     ImageButton button = Elem.newImageButton(icon, listener);
+        //     return add(button);
+        // }
+        
+        // BUG
+        let iconName = "percentage";
+        if (Core.atlas.has(iconName)) {
+            print("MOD: icon found");
+        } else print("MOD: icon not found");
+
+        let icon = TextureRegionDrawable(Core.atlas.find(iconName));
+        buttonTable.button(icon, () => {
             if (mobileBtn) {
                 mobileBtn = false;
             } else mobileBtn = true;
@@ -336,5 +352,7 @@ function mod_mobile_update() {
         }
 
         mod_updateStatistics();
+
+        regions = [];
     }
 }
