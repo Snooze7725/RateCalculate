@@ -24,16 +24,16 @@ var mainTable = new Table();
 var worldLoaded = false;
 var dragging = false;
 var isMobile = true;
-var mobileBtn = false;
+var mobileBtnActiv = false;
 var startX = 0, startY = 0, endX = 0, endY = 0;
 // var prevEndX = -1, prevEndY = -1; // For memory optimization
 var regions = []; // Array for storing all regions
 
 // TODO uncomment this
 // Check if user is on mobile
-// if (Core.app.isDesktop() || Core.app.isWeb()) {
-//     isMobile = false;
-// }
+if (Core.app.isDesktop() || Core.app.isWeb()) {
+    isMobile = true;
+}
 
 // Main events
 // Create the table after the world is loaded
@@ -201,11 +201,10 @@ function mod_init() {
 
     betweenTable.add(mainTable).row();
 
-    let buttonTable = new Table();
-    buttonTable.marginTop(Scl.scl(8));
+    let btnTable = new Table();
+    btnTable.marginTop(Scl.scl(8));
 
     // If user is on mobile make the button
-    // let texture = new TextureDrawableRegion("path/to/your/icon.png");
 
     if (isMobile) {
         // TODO give the button a min width and change it into an image button
@@ -216,21 +215,30 @@ function mod_init() {
         //     return add(button);
         // }
         
-        // BUG
-        let iconName = "percentage";
-        if (Core.atlas.has(iconName)) {
-            print("MOD: icon found");
-        } else print("MOD: icon not found");
+        // TODO interpret ts
+        // Core.atlas.getRegions().each(r => {
+        //     if(r.name.includes("percent")){
+        //         print("Found region: " + r.name);
+        //     }
+        // });
 
-        let icon = TextureRegionDrawable(Core.atlas.find(iconName));
-        buttonTable.button(icon, () => {
-            if (mobileBtn) {
-                mobileBtn = false;
-            } else mobileBtn = true;
-        });
+        // TODO change the style of the button after it's pressed
+
+        let modName = "rate-calculate";
+        let iconName = "calculator_32";
+        let icon = TextureRegionDrawable(Core.atlas.find(modName + "-" + iconName));
+
+        // BUG fix styling
+        let btn = btnTable.button(icon, () => {
+            if (mobileBtnActiv) {
+                mobileBtnActiv = false;
+            } else {
+                mobileBtnActiv = true;
+            }
+        }).left();
     }
 
-    betweenTable.add(buttonTable).growX();
+    betweenTable.add(btnTable).growX();
 
     worldLoaded = true;
 }
@@ -329,7 +337,7 @@ function mod_mobile_update() {
     if (!worldLoaded) return;
 
     // 
-    if (mobileBtn && !dragging && Core.input.isTouched()) {
+    if (mobileBtnActiv && !dragging && Core.input.isTouched()) {
         startX = World.toTile(Core.input.mouseWorldX());
         startY = World.toTile(Core.input.mouseWorldY());
 
