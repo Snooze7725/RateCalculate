@@ -1,4 +1,7 @@
-// Constants
+// ============================
+// Variables
+// ============================
+
 const dataHandlers = require("block_data_handlers");
 
 const exceptionResults = [Blocks.separator, Blocks.disassembler];
@@ -29,17 +32,18 @@ var startX = 0, startY = 0, endX = 0, endY = 0;
 // var prevEndX = -1, prevEndY = -1; // For memory optimization
 var regions = []; // Array for storing all regions
 
+print("MOD: check: " + Core.input.mouseX());
+
+// ============================
+// Platform Specific Handler
+// ============================
+
 // TODO uncomment this
 // Check if user is on mobile
-if (Core.app.isDesktop() || Core.app.isWeb()) {
-    isMobile = true;
-}
+// if (Core.app.isDesktop() || Core.app.isWeb()) {
+//     isMobile = false;
+// }
 
-// Main events
-// Create the table after the world is loaded
-Events.on(WorldLoadEvent, mod_init);
-
-// Check if user is on mobile
 if (isMobile) {
     var modUpdateRef = mod_mobile_update;
 } else {
@@ -50,13 +54,24 @@ if (isMobile) {
     var keyPressed = KeyCode.controlLeft;
 }
 
+// ============================
+// Events
+// ============================
+
+// Create the table after the world is loaded
+Events.on(WorldLoadEvent, mod_init);
+
 // Draw the selector per draw trigger tick - draws whatever is available contantly
 Events.run(Trigger.draw, mod_drawer);
 // Update the regions per update trigger tick - records constantly 
 Events.run(Trigger.update, modUpdateRef);
 
+// print("MOD: object check: " + typeof mindustry.input);
 
-// 
+// ============================
+// Trigger Funcions
+// ============================
+
 function mod_updateStatistics() {
     mainTable.clearChildren();
     
@@ -180,69 +195,6 @@ function mod_updateStatistics() {
     }
 }
 
-//
-// Main functions: Initialization, Frame drawing, Update – InputHandler
-//
-
-function mod_init() {
-    table.clearChildren();
-
-    // Checks if user is on mobile
-    Vars.ui.hudGroup.removeChild(table);
-    Vars.ui.hudGroup.addChild(table);
-    
-    table.bottom().left().margin(Scl.scl(5));
-
-    let betweenTable = new Table();
-    betweenTable.margin(Scl.scl(8));
-    betweenTable.background(Tex.pane);
-
-    table.add(betweenTable);
-
-    betweenTable.add(mainTable).row();
-
-    let btnTable = new Table();
-    btnTable.marginTop(Scl.scl(8));
-
-    // If user is on mobile make the button
-
-    if (isMobile) {
-        // TODO give the button a min width and change it into an image button
-        // TODO use the crafting icon by either finding a way to grab a menu icon OR download an use an asset using core.atlas.find()
-
-        // public Cell<ImageButton> button(Drawable icon, Runnable listener){
-        //     ImageButton button = Elem.newImageButton(icon, listener);
-        //     return add(button);
-        // }
-        
-        // TODO interpret ts
-        // Core.atlas.getRegions().each(r => {
-        //     if(r.name.includes("percent")){
-        //         print("Found region: " + r.name);
-        //     }
-        // });
-
-        // TODO change the style of the button after it's pressed
-
-        let modName = "rate-calculate";
-        let iconName = "calculator_32";
-        let icon = TextureRegionDrawable(Core.atlas.find(modName + "-" + iconName));
-
-        // BUG fix styling
-        let btn = btnTable.button(icon, () => {
-            if (mobileBtnActiv) {
-                mobileBtnActiv = false;
-            } else {
-                mobileBtnActiv = true;
-            }
-        }).left();
-    }
-
-    betweenTable.add(btnTable).growX();
-
-    worldLoaded = true;
-}
-
 function mod_drawer() {
     if (!worldLoaded) return;
 
@@ -276,6 +228,10 @@ function mod_drawer() {
         Draw.reset();
     };
 }
+
+// --------------
+// Update Functions
+// --------------
 
 function mod_update() {
     if (!worldLoaded) return;
@@ -336,7 +292,6 @@ function mod_update() {
 function mod_mobile_update() {
     if (!worldLoaded) return;
 
-    // 
     if (mobileBtnActiv && !dragging && Core.input.isTouched()) {
         startX = World.toTile(Core.input.mouseWorldX());
         startY = World.toTile(Core.input.mouseWorldY());
@@ -345,6 +300,8 @@ function mod_mobile_update() {
     }
 
     if (dragging) {
+        Core.input.addLock(true);
+
         endX = World.toTile(Core.input.mouseWorldX());
         endY = World.toTile(Core.input.mouseWorldY());
 
@@ -357,10 +314,74 @@ function mod_mobile_update() {
 
         if (!Core.input.isTouched()) {
             dragging = false;
+            Core.input.addLock(true);
         }
 
         mod_updateStatistics();
 
         regions = [];
     }
+}
+
+// ============================
+// Table Function
+// ============================
+
+function mod_init() {
+    table.clearChildren();
+
+    // Checks if user is on mobile
+    Vars.ui.hudGroup.removeChild(table);
+    Vars.ui.hudGroup.addChild(table);
+    
+    table.bottom().left().margin(Scl.scl(5));
+
+    let betweenTable = new Table();
+    betweenTable.margin(Scl.scl(8));
+    betweenTable.background(Tex.pane);
+
+    table.add(betweenTable);
+
+    betweenTable.add(mainTable).row();
+
+    let btnTable = new Table();
+    btnTable.marginTop(Scl.scl(8));
+
+    // If user is on mobile make the button
+
+    if (isMobile) {
+        // TODO give the button a min width and change it into an image button
+        // TODO use the crafting icon by either finding a way to grab a menu icon OR download an use an asset using core.atlas.find()
+
+        // public Cell<ImageButton> button(Drawable icon, Runnable listener){
+        //     ImageButton button = Elem.newImageButton(icon, listener);
+        //     return add(button);
+        // }
+        
+        // TODO interpret ts
+        // Core.atlas.getRegions().each(r => {
+        //     if(r.name.includes("percent")){
+        //         print("Found region: " + r.name);
+        //     }
+        // });
+
+        // TODO change the style of the button after it's pressed
+
+        let modName = "rate-calculate";
+        let iconName = "calculator_32";
+        let icon = TextureRegionDrawable(Core.atlas.find(modName + "-" + iconName));
+
+        // BUG fix styling
+        let btn = btnTable.button(icon, () => {
+            if (mobileBtnActiv) {
+                mobileBtnActiv = false;
+            } else {
+                mobileBtnActiv = true;
+            }
+        }).left();
+    }
+
+    betweenTable.add(btnTable).growX();
+
+    worldLoaded = true;
 }
