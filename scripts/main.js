@@ -19,7 +19,10 @@ const drillTypes = [
     Blocks.impactDrill,
 ];
 
-// Main table
+var frozenCamX = undefined;
+var frozenCamY = undefined;
+
+// Tables
 var table = new Table();
 var mainTable = new Table();
 
@@ -60,7 +63,6 @@ if (isMobile) {
 
 // Create the table after the world is loaded
 Events.on(WorldLoadEvent, mod_init);
-
 // Draw the selector per draw trigger tick - draws whatever is available contantly
 Events.run(Trigger.draw, mod_drawer);
 // Update the regions per update trigger tick - records constantly 
@@ -300,8 +302,14 @@ function mod_mobile_update() {
     }
 
     if (dragging) {
-        Core.input.addLock(true);
+        if (frozenCamX === undefined) {
+            frozenCamX = Core.camera.position.getX();
+            frozenCamY = Core.camera.position.getY();
+        }
 
+        Core.camera.position.set(frozenCamX, frozenCamY);
+
+        // Stops panning for the user so that they can select things
         endX = World.toTile(Core.input.mouseWorldX());
         endY = World.toTile(Core.input.mouseWorldY());
 
@@ -314,7 +322,8 @@ function mod_mobile_update() {
 
         if (!Core.input.isTouched()) {
             dragging = false;
-            Core.input.addLock(true);
+            frozenCamX = undefined;
+            frozenCamY = undefined;
         }
 
         mod_updateStatistics();
@@ -324,7 +333,7 @@ function mod_mobile_update() {
 }
 
 // ============================
-// Table Function
+// Event Functions
 // ============================
 
 function mod_init() {
