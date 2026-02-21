@@ -24,6 +24,9 @@ function mod_getDrillStatsForReg(region, drillTypes) {
             }
         }
     }
+
+    if (IDs.length === 0) return;
+
     return {speed: speed, effTotal: effTotal, amount: amount};
 }
 
@@ -80,6 +83,7 @@ function mod_getInOutPutStatsForReg(region, exceptionResults, exceptionMulti, wa
                 let liquidDrop = build.liquidDrop;
                 output.put(liquidDrop, block.pumpAmount * 60 * build.timeScale() * exceptionMultiplier + output.get(liquidDrop, 0));
             }
+
             if (block == oilExtractor) {
                 if (IDs.includes(build.id)) continue;
 
@@ -169,6 +173,8 @@ function mod_getInOutPutStatsForReg(region, exceptionResults, exceptionMulti, wa
         }
     }
 
+    if (IDs.length === 0) return;
+
     return {input: input, output: output, exceptions: exceptions, effTotal: effTotal, amount: amount};
 }
 
@@ -199,6 +205,8 @@ function mod_getPowerStatsForReg(region) {
             effTotal += build.efficiency;
         }
     }
+
+    if (IDs.length === 0) return;
 
     return {production: totalPower, effTotal: effTotal, amount: amount};
 }
