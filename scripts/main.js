@@ -23,13 +23,13 @@ var frozenCamX = undefined;
 var frozenCamY = undefined;
 
 // Tables
-var table = new Table();
 var mainTable = new Table();
+var table = new Table();
 
 // States
 var worldLoaded = false;
 var dragging = false;
-var isMobile = true;
+var isMobile = false;
 var mobileBtnActiv = false;
 var startX = 0, startY = 0, endX = 0, endY = 0;
 // var prevEndX = -1, prevEndY = -1; // For memory optimization
@@ -53,7 +53,7 @@ if (isMobile) {
     var modUpdateRef = mod_update;
 
     // Button mapping
-    var keyDrillSpeed = KeyCode.c;
+    var keySelect = KeyCode.c;
     var keyPressed = KeyCode.controlLeft;
 }
 
@@ -75,17 +75,8 @@ Events.run(Trigger.update, modUpdateRef);
 // ============================
 
 function mod_updateStatistics() {
-    mainTable.clearChildren();
-    
-    // The default output
-    if (regions.length === 0) {
-        mainTable.add("[lightgray]" + Core.bundle.get("rateCalculate.select") + "[]").left().row();
-        mainTable.add("[lightgray]" + Core.bundle.get("rateCalculate.selectfew") + "[]").left();
-        return;
-    }
-    
     // Summary statistics across all regions
-    // BUG statistics across all regions are not summed up
+    // FIX-ME statistics across all regions are not summed up
     var totalDrillStats = {speed: 0, effTotal: 0, amount: 0};
     var totalInOutPutStats = {input: new ObjectMap(), output: new ObjectMap(), exceptions: new ObjectMap(), effTotal: 0, amount: 0};
     var totalPowerStats = {production: 0, effTotal: 0, amount: 0}
@@ -96,104 +87,115 @@ function mod_updateStatistics() {
         var inOutPutStats = dataHandlers.mod_getInOutPutStatsForReg(region, exceptionResults, exceptionMulti, waterExtractor, oilExtractor, oil);
         var powerStats = dataHandlers.mod_getPowerStatsForReg(region);
 
-        // Sum drills
-        totalDrillStats.speed += drillStats.speed;
-        totalDrillStats.effTotal += drillStats.effTotal;
-        totalDrillStats.amount += drillStats.amount;
-        
-        // Sum input and output
-        inOutPutStats.input.each((item, amount) => {
-            totalInOutPutStats.input.put(item, totalInOutPutStats.input.get(item, 0) + amount);
-        });
-        inOutPutStats.output.each((item, amount) => {
-            totalInOutPutStats.output.put(item, totalInOutPutStats.output.get(item, 0) + amount);
-        });
-        inOutPutStats.exceptions.each((item, amount) => {
-            totalInOutPutStats.exceptions.put(item, totalInOutPutStats.exceptions.get(item, 0) + amount);
-        });
-        totalInOutPutStats.effTotal += inOutPutStats.effTotal;
-        totalInOutPutStats.amount += inOutPutStats.amount;
-        
-        // Sum power
-        totalPowerStats.production = powerStats.production;
-        totalPowerStats.effTotal = powerStats.effTotal;
-        totalPowerStats.amount = powerStats.amount;
-    };
-    
-    // Drill statistics
-    if (totalDrillStats.amount > 0) {
-        var drillTable = new Table();
-        drillTable.add("[accent]" + Core.bundle.get("rateCalculate.drills") + ":[]").row();
-        drillTable.add(Core.bundle.get("rateCalculate.speed") + " : ").left();
-        drillTable.add(Math.round(totalDrillStats.speed * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec")).left().row();
-        drillTable.add(Core.bundle.get("rateCalculate.efficiency") + ": ").left();
-        drillTable.add(Math.round(totalDrillStats.effTotal / totalDrillStats.amount * 1000) / 10 + "%").left().row();
-        mainTable.add(drillTable).row();
-    }
-    
-    // Power statistics
-    if (totalPowerStats.amount > 0) {
-        mainTable.row();
-        var powerTable = new Table();
-        powerTable.add("[accent]" + Core.bundle.get("rateCalculate.energy") + ":[]").row();
-        powerTable.add(Core.bundle.get("rateCalculate.production") + ": ").left();
-        powerTable.add(Math.round(totalPowerStats.production * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec")).left().row();
-        powerTable.add(Core.bundle.get("rateCalculate.efficiency") + ": ").left();
-        powerTable.add(Math.round(totalPowerStats.effTotal / totalPowerStats.amount * 1000) / 10 + "%").left().row();
-        mainTable.add(powerTable).row();
-    }
-    
-    // Factory statistics (input)
-    let totalFactoriesInput = totalInOutPutStats.input;
-    if (totalFactoriesInput.size > 0) {
-        mainTable.row();
-        mainTable.add("[accent]" + Core.bundle.get("rateCalculate.input") + ":[]").row();
-        
-        totalFactoriesInput.each((item, amount) => {
-            var rowTable = new Table();
-            rowTable.add(new Image(item.uiIcon)).size(24);
-            rowTable.add(item + ": ").left();
-            rowTable.add(Math.round(amount * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec")).left();
-            mainTable.add(rowTable).left().row();
-        });
-    }
-    
-    // Factory statistics (output)
-    let totalFactoriesOutput = totalInOutPutStats.output;
-    if (totalFactoriesOutput.size > 0 || totalInOutPutStats.exceptions.size > 0) {
-        mainTable.row();
-        mainTable.add("[accent]" + Core.bundle.get("rateCalculate.output") + ":[]").row();
+        if ((drillStats !== undefined) || (inOutPutStats !== undefined) || (powerStats !== undefined)) mainTable.clearChildren();
 
-        totalFactoriesOutput.each((item, amount) => {
-            var rowTable = new Table();
-            let result = 0;
-            let amountString = "";
-            if (totalInOutPutStats.exceptions.containsKey(item)) {
-                amountString = "~";
-                result += totalInOutPutStats.exceptions.get(item);
-                totalInOutPutStats.exceptions.remove(item);
+        //  Drills
+        if (!(drillStats === undefined)) {
+            // Sum drills
+            totalDrillStats.speed += drillStats.speed;
+            totalDrillStats.effTotal += drillStats.effTotal;
+            totalDrillStats.amount += drillStats.amount;
+
+            // Drill statistics
+            if (totalDrillStats.amount > 0) {
+                var drillTable = new Table();
+                drillTable.add("[accent]" + Core.bundle.get("rateCalculate.drills") + ":[]").row();
+                drillTable.add(Core.bundle.get("rateCalculate.speed") + " : ").left();
+                drillTable.add(Math.round(totalDrillStats.speed * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec")).left().row();
+                drillTable.add(Core.bundle.get("rateCalculate.efficiency") + ": ").left();
+                drillTable.add(Math.round(totalDrillStats.effTotal / totalDrillStats.amount * 1000) / 10 + "%").left().row();
+                mainTable.add(drillTable).row();
             }
-            rowTable.add(new Image(item.uiIcon)).size(24);
-            rowTable.add(item + ": ").left();
-            amountString += Math.round((amount + result) * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec");
-            rowTable.add(amountString).left();
-            mainTable.add(rowTable).left().row();
-        });
+        }
+        
+        // IO
+        if (!(inOutPutStats === undefined)) {
+            // Sum input and output
+            inOutPutStats.input.each((item, amount) => {
+                totalInOutPutStats.input.put(item, totalInOutPutStats.input.get(item, 0) + amount);
+            });
+            inOutPutStats.output.each((item, amount) => {
+                totalInOutPutStats.output.put(item, totalInOutPutStats.output.get(item, 0) + amount);
+            });
+            inOutPutStats.exceptions.each((item, amount) => {
+                totalInOutPutStats.exceptions.put(item, totalInOutPutStats.exceptions.get(item, 0) + amount);
+            });
+            totalInOutPutStats.effTotal += inOutPutStats.effTotal;
+            totalInOutPutStats.amount += inOutPutStats.amount;
 
-        totalInOutPutStats.exceptions.each((item, amount) => {
-            var rowTable = new Table();
-            rowTable.add(new Image(item.uiIcon)).size(24);
-            rowTable.add(item + ": ").left();
-            rowTable.add("~" + Math.round(amount * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec")).left();
-            mainTable.add(rowTable).left().row();
-        });
-    }
+            // Factory statistics (input)
+            let totalFactoriesInput = totalInOutPutStats.input;
+            if (totalFactoriesInput.size > 0) {
+                mainTable.row();
+                mainTable.add("[accent]" + Core.bundle.get("rateCalculate.input") + ":[]").row();
+                
+                totalFactoriesInput.each((item, amount) => {
+                    var rowTable = new Table();
+                    rowTable.add(new Image(item.uiIcon)).size(24);
+                    rowTable.add(item + ": ").left();
+                    rowTable.add(Math.round(amount * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec")).left();
+                    mainTable.add(rowTable).left().row();
+                });
+            }
+            
+            // Factory statistics (output)
+            let totalFactoriesOutput = totalInOutPutStats.output;
+            if (totalFactoriesOutput.size > 0 || totalInOutPutStats.exceptions.size > 0) {
+                mainTable.row();
+                mainTable.add("[accent]" + Core.bundle.get("rateCalculate.output") + ":[]").row();
 
-    // Overall factory efficiency
-    if (totalFactoriesInput.size > 0 || totalFactoriesOutput.size > 0) {
-        mainTable.row();
-        mainTable.add("[accent]" + Core.bundle.get("rateCalculate.overall") + ": []");
-        mainTable.add(Math.round(totalInOutPutStats.effTotal / totalInOutPutStats.amount * 1000) / 10 + "%").left().row();
+                totalFactoriesOutput.each((item, amount) => {
+                    var rowTable = new Table();
+                    let result = 0;
+                    let amountString = "";
+                    if (totalInOutPutStats.exceptions.containsKey(item)) {
+                        amountString = "~";
+                        result += totalInOutPutStats.exceptions.get(item);
+                        totalInOutPutStats.exceptions.remove(item);
+                    }
+                    rowTable.add(new Image(item.uiIcon)).size(24);
+                    rowTable.add(item + ": ").left();
+                    amountString += Math.round((amount + result) * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec");
+                    rowTable.add(amountString).left();
+                    mainTable.add(rowTable).left().row();
+                });
+
+                totalInOutPutStats.exceptions.each((item, amount) => {
+                    var rowTable = new Table();
+                    rowTable.add(new Image(item.uiIcon)).size(24);
+                    rowTable.add(item + ": ").left();
+                    rowTable.add("~" + Math.round(amount * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec")).left();
+                    mainTable.add(rowTable).left().row();
+                });
+            }
+
+            // Overall factory efficiency
+            if (totalFactoriesInput.size > 0 || totalFactoriesOutput.size > 0) {
+                mainTable.row();
+                mainTable.add("[accent]" + Core.bundle.get("rateCalculate.overall") + ": []");
+                mainTable.add(Math.round(totalInOutPutStats.effTotal / totalInOutPutStats.amount * 1000) / 10 + "%").left().row();
+            }
+        }
+
+        // Power
+        if (!(powerStats === undefined)) {
+            // Sum power
+            totalPowerStats.production = powerStats.production;
+            totalPowerStats.effTotal = powerStats.effTotal;
+            totalPowerStats.amount = powerStats.amount;
+            
+            // Power statistics
+            if (totalPowerStats.amount > 0) {
+                mainTable.row();
+                var powerTable = new Table();
+                powerTable.add("[accent]" + Core.bundle.get("rateCalculate.energy") + ":[]").row();
+                powerTable.add(Core.bundle.get("rateCalculate.production") + ": ").left();
+                powerTable.add(Math.round(totalPowerStats.production * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec")).left().row();
+                powerTable.add(Core.bundle.get("rateCalculate.efficiency") + ": ").left();
+                powerTable.add(Math.round(totalPowerStats.effTotal / totalPowerStats.amount * 1000) / 10 + "%").left().row();
+                mainTable.add(powerTable).row();
+            }
+        }
     }
 }
 
@@ -240,9 +242,14 @@ function mod_update() {
 
     // Flag for if holding ctrl
     const ctrlPressed = Core.input.keyDown(keyPressed);
+
+    // Manually clear display
+    if (ctrlPressed && Core.input.isTouched()) {
+        mainTable.clearChildren();
+    }
     
     // If holding mb get coords - you're dragging now
-    if (Core.input.keyTap(keyDrillSpeed)) {
+    if (Core.input.keyTap(keySelect)) {
         startX = World.toTile(Core.input.mouseWorldX());
         startY = World.toTile(Core.input.mouseWorldY());
         // endX = -1;
@@ -258,7 +265,7 @@ function mod_update() {
         endY = World.toTile(Core.input.mouseWorldY());
         
         // While ctrl held and mb held, save coords to be drawn
-        if (ctrlPressed && !Core.input.keyDown(keyDrillSpeed)) {
+        if (ctrlPressed && !Core.input.keyDown(keySelect)) {
             // Pushes items into the back of the array
             regions.push({
                 startX: startX,
@@ -275,7 +282,7 @@ function mod_update() {
             }
         }
 
-        if (!Core.input.keyDown(keyDrillSpeed)) {
+        if (!Core.input.keyDown(keySelect)) {
             dragging = false;
         }
     }
@@ -325,11 +332,11 @@ function mod_mobile_update() {
             frozenCamX = undefined;
             frozenCamY = undefined;
         }
-
-        mod_updateStatistics();
-
-        regions = [];
     }
+
+    mod_updateStatistics();
+
+    regions = [];
 }
 
 // ============================
@@ -343,54 +350,45 @@ function mod_init() {
     Vars.ui.hudGroup.removeChild(table);
     Vars.ui.hudGroup.addChild(table);
     
-    table.bottom().left().margin(Scl.scl(5));
+    table.bottom().left();
 
-    let betweenTable = new Table();
-    betweenTable.margin(Scl.scl(8));
-    betweenTable.background(Tex.pane);
-
+    // Between table
+    let betweenTable = new Table(Tex.pane);
     table.add(betweenTable);
 
+    // Main table
+    mainTable.margin(0, 3, 10, 3); // top, left, bottom, right
     betweenTable.add(mainTable).row();
 
-    let btnTable = new Table();
-    btnTable.marginTop(Scl.scl(8));
-
+    // Btn table
     // If user is on mobile make the button
-
     if (isMobile) {
-        // TODO give the button a min width and change it into an image button
-        // TODO use the crafting icon by either finding a way to grab a menu icon OR download an use an asset using core.atlas.find()
-
-        // public Cell<ImageButton> button(Drawable icon, Runnable listener){
-        //     ImageButton button = Elem.newImageButton(icon, listener);
-        //     return add(button);
-        // }
-        
-        // TODO interpret ts
-        // Core.atlas.getRegions().each(r => {
-        //     if(r.name.includes("percent")){
-        //         print("Found region: " + r.name);
-        //     }
-        // });
-
-        // TODO change the style of the button after it's pressed
+        let btnTable = new Table();
+        btnTable.left();
 
         let modName = "rate-calculate";
         let iconName = "calculator_32";
         let icon = TextureRegionDrawable(Core.atlas.find(modName + "-" + iconName));
 
-        // BUG fix styling
-        let btn = btnTable.button(icon, () => {
+        // The mobile button
+        btnTable.button(icon, () => {
             if (mobileBtnActiv) {
                 mobileBtnActiv = false;
             } else {
                 mobileBtnActiv = true;
             }
-        }).left();
-    }
+        });
 
-    betweenTable.add(btnTable).growX();
+        betweenTable.add(btnTable).growX();
+    } else {
+        // idk
+        let hintTable = new Table();
+        hintTable.add("[lightgray]" + Core.bundle.get("rateCalculate.select") + "[]").left().row();
+        hintTable.add("[lightgray]" + Core.bundle.get("rateCalculate.reset") + "[]").left().row();
+        hintTable.add("[lightgray]" + Core.bundle.get("rateCalculate.selectfew") + "[]").left();
+
+        betweenTable.add(hintTable);
+    }
 
     worldLoaded = true;
 }
