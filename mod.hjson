@@ -1,6 +1,6 @@
 name: "rate-calculate"
-displayName: "Rate Calculate"
-author: "Snooze7725"
+displayName: "[accent]Rate Calculate"
+author: "[accent]Snooze7725"
 main: scripts/main.js
 description: "A simple mod, originally made by Lelushik/TheReDi, that displays the rate of many buildings. Doesn't work properly on Erekir yet. Check the Github repo for more information."
 version: 1
