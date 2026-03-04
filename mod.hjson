@@ -5,4 +5,5 @@ main: scripts/main.js
 description: "A simple mod, originally made by Lelushik/TheReDi, that displays the rate of many buildings. Doesn't work properly on Erekir yet. Check the Github repo for more information."
 version: 1
 minGameVersion: 154
+icon: "icon"
 hidden: true
