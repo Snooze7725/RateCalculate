@@ -1,3 +1,5 @@
+![Repo Logo](icon.png)
+
 # Rate Calculate
 
 Originally Lelushik/TheReDi's; however, it has been improved.
