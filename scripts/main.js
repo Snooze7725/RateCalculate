@@ -100,13 +100,13 @@ function mod_updateStatistics() {
             if (totalDrillStats.amount > 0) {
                 var drillTable = new Table();
                 drillTable.left().margin(5, 0, 5, 0);
-                drillTable.add("[accent]" + Core.bundle.get("rateCalculate.drills") + ":[]").left().row();
+                drillTable.add("[accent]" + Core.bundle.get("rateCalculate.drills") + ":[]").left().fontScale(0.8).row();
 
                 let speedNumb = Math.round(totalDrillStats.speed * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec");
-                drillTable.add(Core.bundle.get("rateCalculate.speed") + ": " + speedNumb).left().row();
+                drillTable.add(Core.bundle.get("rateCalculate.speed") + ": " + speedNumb).left().fontScale(0.8).row();
 
                 let efficiNumb = Math.round(totalDrillStats.effTotal / totalDrillStats.amount * 1000) / 10 + "%";
-                drillTable.add(Core.bundle.get("rateCalculate.efficiency") + ": " + efficiNumb).left().row();
+                drillTable.add(Core.bundle.get("rateCalculate.efficiency") + ": " + efficiNumb).left().fontScale(0.8).row();
 
                 mainTable.add(drillTable).left().row();
             }
@@ -132,7 +132,7 @@ function mod_updateStatistics() {
             if (totalFactoriesInput.size > 0) {
                 var outTable = new Table();
                 outTable.left().margin(5, 0, 5, 0);
-                outTable.add("[accent]" + Core.bundle.get("rateCalculate.input") + ":[]").left().marginBottom(5).row();
+                outTable.add("[accent]" + Core.bundle.get("rateCalculate.input") + ":[]").left().fontScale(0.8).marginBottom(5).row();
                 
                 totalFactoriesInput.each((item, amount) => {
                     var rowTable = new Table();
@@ -141,7 +141,7 @@ function mod_updateStatistics() {
                     rowTable.add(new Image(item.uiIcon)).left().size(24);
 
                     let inputNumb = Math.round(amount * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec");
-                    rowTable.add(item + ": " + inputNumb).left();
+                    rowTable.add(item + ": " + inputNumb).left().fontScale(0.8);
 
                     outTable.add(rowTable).left().row();
                 });
@@ -154,7 +154,7 @@ function mod_updateStatistics() {
             if (totalFactoriesOutput.size > 0 || totalInOutPutStats.exceptions.size > 0) {
                 var outTable = new Table();
                 outTable.left().margin(5, 0, 5, 0);
-                outTable.add("[accent]" + Core.bundle.get("rateCalculate.output") + ":[]").left().marginBottom(5).row();
+                outTable.add("[accent]" + Core.bundle.get("rateCalculate.output") + ":[]").left().fontScale(0.8).marginBottom(5).row();
 
                 totalFactoriesOutput.each((item, amount) => {
                     var rowTable = new Table();
@@ -167,10 +167,11 @@ function mod_updateStatistics() {
                         result += totalInOutPutStats.exceptions.get(item);
                         totalInOutPutStats.exceptions.remove(item);
                     }
-                    rowTable.add(new Image(item.uiIcon)).left().size(24);
+                    
+                    rowTable.add(new Image(item.uiIcon)).left().fontScale(0.8).size(24);
 
                     amountString += Math.round((amount + result) * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec");
-                    rowTable.add(item + ": " + amountString).left();
+                    rowTable.add(item + ": " + amountString).left().fontScale(0.8);
 
                     outTable.add(rowTable).left().row();
                 });
@@ -179,10 +180,10 @@ function mod_updateStatistics() {
                     var rowTable = new Table();
                     rowTable.left();
 
-                    rowTable.add(new Image(item.uiIcon)).left().size(24);
+                    rowTable.add(new Image(item.uiIcon)).left().fontScale(0.8).size(24);
                     
                     let amount = "~" + Math.round(amount * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec");
-                    rowTable.add(item + ": " + amount).left();
+                    rowTable.add(item + ": " + amount).left().fontScale(0.8);
 
                     outTable.add(rowTable).left().row();
                 });
@@ -195,10 +196,10 @@ function mod_updateStatistics() {
                 var efficiTable = new Table();
                 efficiTable.left().margin(5, 0, 5, 0);
 
-                efficiTable.add("[accent]" + Core.bundle.get("rateCalculate.overall") + ": []").left().row();
+                efficiTable.add("[accent]" + Core.bundle.get("rateCalculate.overall") + ": []").left().fontScale(0.8).row();
 
                 let efficiNumb = Math.round(totalInOutPutStats.effTotal / totalInOutPutStats.amount * 1000) / 10 + "%";
-                efficiTable.add(Core.bundle.get("rateCalculate.efficiency") + ": " + efficiNumb).left().row();
+                efficiTable.add(Core.bundle.get("rateCalculate.efficiency") + ": " + efficiNumb).left().fontScale(0.8).row();
 
                 mainTable.add(efficiTable).left().row();
             }
@@ -216,13 +217,13 @@ function mod_updateStatistics() {
                 var powerTable = new Table();
                 powerTable.left().margin(5, 0, 5, 0);
 
-                powerTable.add("[accent]" + Core.bundle.get("rateCalculate.energy") + ":[]").left().row();
+                powerTable.add("[accent]" + Core.bundle.get("rateCalculate.energy") + ":[]").left().fontScale(0.8).row();
 
                 let powerNumb = Math.round(totalPowerStats.production * 100) / 100 + "/" + Core.bundle.get("rateCalculate.sec");
-                powerTable.add(Core.bundle.get("rateCalculate.production") + ": " + powerNumb).left().row();
+                powerTable.add(Core.bundle.get("rateCalculate.production") + ": " + powerNumb).left().fontScale(0.8).row();
 
                 let efficiNumb = Math.round(totalPowerStats.effTotal / totalPowerStats.amount * 1000) / 10 + "%";
-                powerTable.add(Core.bundle.get("rateCalculate.efficiency") + ": " + efficiNumb).left();
+                powerTable.add(Core.bundle.get("rateCalculate.efficiency") + ": " + efficiNumb).left().fontScale(0.8);
 
                 mainTable.add(powerTable).left().row();
             }
@@ -343,6 +344,8 @@ function mod_mobile_update() {
             frozenCamX = undefined;
             frozenCamY = undefined;
         }
+        
+        mobileBtnActiv = false;
     }
 
     mod_updateStatistics();
@@ -376,22 +379,29 @@ function mod_init() {
     // If user is on mobile make the button
     if (isMobile) {
         var btnTable = new Table(Tex.pane);
-        btnTable.left();
+        btnTable.left().margin(0, 15, 0, 15);
 
         let modName = "rate-calculate";
-        let iconName = "calculator_32";
-        let icon = TextureRegionDrawable(Core.atlas.find(modName + "-" + iconName));
+        
+        let calcIconName = "calculator_32";
+        let resetIconName = "crafting_32";
+        
+        let calcIcon = TextureRegionDrawable(Core.atlas.find(modName + "-" + calcIconName));
+        let resetIcon = TextureRegionDrawable(Core.atlas.find(modName + "-" + resetIconName));
 
         // The mobile button
-        btnTable.button(icon, () => {
-            if (mobileBtnActiv) {
-                mobileBtnActiv = false;
-            } else {
-                mobileBtnActiv = true;
-            }
+        btnTable.button(calcIcon, () => {
+            mobileBtnActiv = true;
         });
-
-        betweenTable.add(btnTable).growX();
+        
+        btnTable.add(new Table()).marginRight(10);
+        
+        btnTable.button(resetIcon, () => {
+            mainTable.clearChildren();
+        });
+        
+        // Adding it to the main table
+        betweenTable.add(btnTable).left().growX();
     } else {
         // idk
         var hintTable = new Table(Tex.pane);
@@ -399,7 +409,7 @@ function mod_init() {
         hintTable.add("[lightgray]" + Core.bundle.get("rateCalculate.select") + "[lightgray]([accent]C[lightgray])").left().fontScale(0.8).row();
         hintTable.add("[lightgray]" + Core.bundle.get("rateCalculate.reset") + "[lightgray]([accent]Ctrl+RMB[lightgray])").left().fontScale(0.8);
 
-        betweenTable.add(hintTable).growX();
+        betweenTable.add(hintTable).left().growX();
     }
 
     worldLoaded = true;
