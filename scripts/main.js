@@ -29,7 +29,7 @@ var table = new Table();
 // States
 var worldLoaded = false;
 var dragging = false;
-var isMobile = false;
+var isMobile = true;
 var mobileBtnActiv = false;
 var startX = 0, startY = 0, endX = 0, endY = 0;
 // var prevEndX = -1, prevEndY = -1; // For memory optimization
@@ -41,11 +41,10 @@ print("MOD: check: " + Core.input.mouseX());
 // Platform Specific Handler
 // ============================
 
-// TODO uncomment this
 // Check if user is on mobile
-// if (Core.app.isDesktop() || Core.app.isWeb()) {
-//     isMobile = false;
-// }
+if (Core.app.isDesktop() || Core.app.isWeb()) {
+    isMobile = false;
+}
 
 if (isMobile) {
     var modUpdateRef = mod_mobile_update;
@@ -384,7 +383,7 @@ function mod_init() {
         let modName = "rate-calculate";
         
         let calcIconName = "calculator_32";
-        let resetIconName = "crafting_32";
+        let resetIconName = "reset_32";
         
         let calcIcon = TextureRegionDrawable(Core.atlas.find(modName + "-" + calcIconName));
         let resetIcon = TextureRegionDrawable(Core.atlas.find(modName + "-" + resetIconName));
